@@ -8,7 +8,7 @@
 
 import UIKit
     
-class PokemonListViewController: UITableViewController, UISearchBarDelegate {
+class ViewController: UITableViewController, UISearchBarDelegate {
     
 //    let pokemon = [
 //        Pokemon(name: "Bulbasaur", number: 1),
@@ -17,6 +17,7 @@ class PokemonListViewController: UITableViewController, UISearchBarDelegate {
 //    ]
     @IBOutlet var searchBar: UISearchBar!
     
+    // Initialise values here
     var pokemon: [Pokemon] = []
     var pokemonSearch: [Pokemon] = []
     
@@ -28,6 +29,7 @@ class PokemonListViewController: UITableViewController, UISearchBarDelegate {
     // Loading page
     override func viewDidLoad() {
         super.viewDidLoad()
+        searchBar.delegate = self
         // Do any additional setup after loading the view.
         
         let url = URL(string: "https://pokeapi.co/api/v2/pokemon?limit=151")
@@ -42,6 +44,7 @@ class PokemonListViewController: UITableViewController, UISearchBarDelegate {
             do {
                 let pokemonList = try JSONDecoder().decode(PokemonList.self, from: data)
                 self.pokemon = pokemonList.results
+                self.pokemonSearch = self.pokemon
                 DispatchQueue.main.async { // Background task to foreground
                      self.tableView.reloadData()
                 }
@@ -60,6 +63,7 @@ class PokemonListViewController: UITableViewController, UISearchBarDelegate {
     // How many rows in each section
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return pokemonSearch.count
+//        return pokemon.count
     }
     
     // Connect data to our view
@@ -75,25 +79,31 @@ class PokemonListViewController: UITableViewController, UISearchBarDelegate {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "PokemonSegue" {
             if let destination = segue.destination as? PokemonViewCOntroller {
-                destination.pokemon = pokemon[tableView.indexPathForSelectedRow!.row]
+                destination.pokemon = pokemonSearch[tableView.indexPathForSelectedRow!.row]
             }
         }
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-      // Store all Pokemons containg searchText in Pokemon struct here
-        if searchText == "" {
-            return
-        }
-        
-        else {
-            for poke in pokemon {
-                if poke.name.contains(searchText.lowercased()) {
-                    pokemonSearch.append(poke)
-            }
-            }
-        }
+      if searchText == "" {
+          pokemonSearch = pokemon
+          tableView.reloadData()
+          return
+      }
+      
+      pokemonSearch.removeAll()
+      
+      for poke in pokemon {
+          
+          if poke.name.contains(searchText.lowercased()) {
+              pokemonSearch.append(poke)
+              tableView.reloadData()
+          }
+      }
+      
+      tableView.reloadData()
     }
+      
     
 }
 

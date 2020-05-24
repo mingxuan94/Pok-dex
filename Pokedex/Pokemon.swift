@@ -31,3 +31,10 @@ struct PokemonTypeEntry: Codable {
     let slot: Int
     let type: PokemonType
 }
+
+// A list of pokemons mapped to is_caught
+struct PokemonCaught {
+    var caught = [String: Bool]()
+}
+
+

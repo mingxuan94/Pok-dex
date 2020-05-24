@@ -14,7 +14,7 @@
   Pokemon type</br>
  - 3rd API call to get Pokemon Description in English 
 
-Functionalities </br>
+<b>Functionalities </b>
 - View Controller 1 </br>
 ![](Screenshots/ViewController.png)
 

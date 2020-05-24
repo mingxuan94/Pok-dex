@@ -17,6 +17,8 @@ class PokemonViewCOntroller: UIViewController {
     @IBOutlet var type1Label: UILabel!
     @IBOutlet var type2Label: UILabel!
     @IBOutlet var button: UIButton!
+    @IBOutlet var image: UIImageView!
+    @IBOutlet var descriptionLabel: UILabel!
     
     var pokemon: Pokemon!
     
@@ -68,12 +70,58 @@ class PokemonViewCOntroller: UIViewController {
                         
                         for typeEntry in pokemonData.types {
                             if typeEntry.slot == 1 {
-                                self.type1Label.text = typeEntry.type.name
+                                self.type1Label.text = capitaliseName(text: typeEntry.type.name)
                             }
                             else if typeEntry.slot == 2 {
-                                self.type2Label.text = typeEntry.type.name
+                                self.type2Label.text = capitaliseName(text: typeEntry.type.name)
                             }
                         }
+                        
+                        // Load Image
+                        let pokemonImageUrl = URL(string: pokemonData.sprites.front_default)
+                        print(pokemonImageUrl!)
+                        guard let i = pokemonImageUrl else {
+                            return
+                        }
+                        URLSession.shared.dataTask(with: i) {(image_data,response,error) in
+                            guard let image_data = image_data else {
+                                return
+                            }
+                            do {
+                                let pokemonImage = try? Data(contentsOf: pokemonImageUrl!)
+                                self.image.image = UIImage(data: pokemonImage!)
+                            }
+                            
+                        }.resume()
+                        
+                        // To get flavor description of pokemon
+                        // E.g URL https://pokeapi.co/api/v2/pokemon-species/25/
+                        // Go to URL -> loop through all flavour text entries -> if language.name == 'en', print flavour_text
+                        let pokemonUrlDescript = URL(string: "https://pokeapi.co/api/v2/pokemon-species/"+String(pokemonData.id))
+                        print(pokemonUrlDescript!)
+                        guard let p = pokemonUrlDescript else {
+                            return
+                        }
+                        URLSession.shared.dataTask(with: p) {(data, response, error) in
+                            guard let data = data else {
+                                return
+                            }
+                            do {
+                                let pokemonFlavorData = try JSONDecoder().decode(PokemonFlavors.self, from: data)
+                                DispatchQueue.main.async {
+                                    for flavor in pokemonFlavorData.flavor_text_entries {
+                                        if flavor.language.name == "en" {
+                                            self.descriptionLabel.text = flavor.flavor_text
+                                        }
+                                    }
+                                }
+                            }
+                            catch let error {
+                                print("\(error)")}
+                        }.resume()
+                                
+
+                        
                 }
                 
             }
